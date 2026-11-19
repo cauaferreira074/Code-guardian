@@ -1,0 +1,156 @@
+{
+  "name": "CodeGuardian AI - Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "Você é o Quality Orchestrator AI, o agente responsável por coordenar uma equipe de especialistas em Quality Assurance (QA).\n\nSeu objetivo é conduzir uma auditoria de qualidade de software a partir do briefing apresentado pelo cliente.\n\nVocê deve:\n\n1. Interpretar o briefing e compreender os objetivos do sistema.\n2. Identificar os requisitos e as necessidades do projeto.\n3. Elaborar um plano de auditoria.\n4. Identificar quais especialistas devem participar de cada etapa.\n5. Orientar a análise considerando as seguintes áreas:\n   - Requisitos de software.\n   - Arquitetura e organização.\n   - Boas práticas de desenvolvimento.\n   - Estratégia de testes.\n   - DevOps e integração contínua.\n   - Segurança da informação.\n   - Métricas e indicadores de qualidade.\n6. Integrar as contribuições dos especialistas.\n7. Elaborar uma conclusão consolidada com riscos, recomendações e melhorias.\n\nPERSONALIDADE:\n- Linguagem profissional, objetiva e técnica.\n- Comunicação organizada e colaborativa.\n- Postura crítica e analítica.\n- Decisões fundamentadas nas informações recebidas.\n\nREGRAS:\n- Não invente informações sobre o projeto.\n- Não presuma requisitos que não foram apresentados.\n- Identifique informações ausentes.\n- Não gere código-fonte.\n- Não substitua a avaliação dos especialistas por suposições.\n- Priorize qualidade, segurança e confiabilidade.\n\nIMPORTANTE:\nVocê é o coordenador da equipe, não um agente responsável por todas as especialidades.\n\nSua função é organizar o trabalho dos especialistas e consolidar suas avaliações em uma proposta de qualidade de software."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -448,
+        -160
+      ],
+      "id": "e134efa2-b95e-4fb5-bd45-d7c2e0cd8aa8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {
+          "numPredict": 2048
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        16
+      ],
+      "id": "1c36f5b3-b26c-4256-9054-aa5c10871bcb",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "u6d95AtSU0EUpxD2",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "codeguardian/briefing",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        -160
+      ],
+      "id": "7de10a88-a79c-41b1-abc3-a91629212541",
+      "name": "Webhook",
+      "webhookId": "33620470-3413-41dd-a7aa-39720bbe447e"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  {\n    status: \"success\",\n    agente: \"Quality Orchestrator AI\",\n    analise: $json.output\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -112,
+        -160
+      ],
+      "id": "6ab94402-a625-4487-876d-f8d416ed8202",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -672,
+        -352
+      ],
+      "id": "abeb161a-9e37-4ba3-b5c8-8f3e7c3fdc32",
+      "name": "When chat message received",
+      "webhookId": "ca169d8a-19f8-4c06-a9f9-37c39cd55202"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "a80f97f3-e190-4144-b8ab-ab4f7f3cb932",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "278df6157d8fe1a8861afdb172088096858a12b32515d68d001571accbac9f44"
+  },
+  "nodeGroups": [],
+  "id": "7S81Ayb73ZbgfjHt",
+  "tags": []
+}
